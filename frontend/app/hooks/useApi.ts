@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Stats } from '../lib/prices';
 
-const API_URL = "http://localhost:8001"
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001"
 
 export function useCommunes() {
     const [communes, setCommunes] = useState<string[]>([]);
