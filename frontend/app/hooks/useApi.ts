@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Stats } from '../lib/prices';
 
 const API_URL = "http://localhost:8001"
 
@@ -12,30 +13,31 @@ export function useCommunes() {
             .then(data => {
                 setCommunes(data.communes);
                 setLoading(false);
-            })        
+            })
+            .catch(() => setLoading(false));
     }, []);
 
     return { communes, loading };
 }
 
-export function useCompare(selected: string[]) {
-    const [data, setData] = useState<any[]>([]);
-    const [loading, setLoading] = useState(false);
+export function useCompare(selected: string[]): { data: Stats[]; loading: boolean } {
+    const [data, setData] = useState<Stats[]>([]);
+    const [loadedKey, setLoadedKey] = useState('');
+    const key = selected.join(',');
 
     useEffect(() => {
-        if (selected.length === 0) {
-            setData([]);
-            return;
-        }
-        setLoading(true);
-        fetch(`${API_URL}/compare?communes=${selected.join(',')}`)
+        if (!key) return;
+        const controller = new AbortController();
+        fetch(`${API_URL}/compare?communes=${key}`, { signal: controller.signal })
             .then((response) => response.json())
-            .then(data => {
-                setData(data.result);
-                setLoading(false);
+            .then(result => {
+                setData(result.result);
+                setLoadedKey(key);
             })
-    }, [selected]);
+            .catch(() => {});
+        return () => controller.abort();
+    }, [key]);
 
-    return { data, loading };
+    const loading = key !== '' && loadedKey !== key;
+    return { data: key ? data : [], loading };
 }
-
