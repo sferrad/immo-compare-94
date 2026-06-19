@@ -1,3 +1,6 @@
 data/
 venv/
 .env
+
+!data/stats_94.json
+!data/cadastre_communes.geojson
