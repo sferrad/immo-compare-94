@@ -7,7 +7,7 @@ import type { Feature, GeoJsonObject } from "geojson"
 import type { Layer, PathOptions, LeafletMouseEvent, Path } from "leaflet"
 import { Stats, getPriceColor, PRICE_SCALE, formatEuro } from "../lib/prices"
 
-const API_URL = "http://localhost:8001"
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001"
 
 interface Props {
   statsData: Stats[]
