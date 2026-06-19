@@ -23,7 +23,10 @@ export function useCompare(selected: string[]) {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (selected.length === 0) return;
+        if (selected.length === 0) {
+            setData([]);
+            return;
+        }
         setLoading(true);
         fetch(`${API_URL}/compare?communes=${selected.join(',')}`)
             .then((response) => response.json())
@@ -35,3 +38,4 @@ export function useCompare(selected: string[]) {
 
     return { data, loading };
 }
+

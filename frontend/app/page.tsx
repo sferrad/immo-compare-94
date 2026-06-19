@@ -1,9 +1,12 @@
 "use client"
 
 import { useState } from "react"
+import dynamic from "next/dynamic"
 import CommuneSelector from "./components/CommuneSelector"
 import CompareTable from "./components/CompareTable"
 import { useCompare } from "./hooks/useApi"
+
+const Map = dynamic(() => import("./components/Map"), { ssr: false })
 
 export default function Home() {
   const [selected, setSelected] = useState<string[]>([])
@@ -23,6 +26,13 @@ export default function Home() {
           Sélectionnez des communes
         </h2>
         <CommuneSelector selected={selected} onChange={setSelected} />
+      </div>
+
+      <div className="bg-white rounded-xl shadow p-6 mb-6">
+        <h2 className="text-lg font-semibold text-gray-700 mb-4">
+          Carte du Val-de-Marne
+        </h2>
+        <Map statsData={data} />
       </div>
 
       {selected.length > 0 && (
