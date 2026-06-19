@@ -1,12 +1,10 @@
 from fastapi import APIRouter
-from app.data import load_dvf_94
 import json
 import os
 from shapely.geometry import shape, mapping, Polygon, MultiPolygon
 from shapely.ops import unary_union
 
 router = APIRouter()
-df = load_dvf_94()
 
 
 def smooth_commune(geom):
@@ -46,13 +44,11 @@ def build_cadastre():
                 g = g.buffer(0)
             valid_geoms.append(g)
         merged = smooth_commune(unary_union(valid_geoms))
-        nom = df[df["Code commune"] == int(code[2:])]["Commune"].values
-        nom = nom[0] if len(nom) > 0 else ""
         features.append({
             "type": "Feature",
             "properties": {
                 "code_insee": code,
-                "nom": nom
+                "nom": ""
             },
             "geometry": mapping(merged)
         })
@@ -68,40 +64,20 @@ def build_cadastre():
 
 cadastre_data = build_cadastre()
 
+with open("data/stats_94.json", "r") as f:
+    stats_data = json.load(f)
+
 
 @router.get("/communes")
 def get_communes():
-    communes = sorted(df["Commune"].unique().tolist())
+    communes = sorted([s["commune"] for s in stats_data])
     return {"communes": communes}
-
-
-@router.get("/stats/{commune}")
-def get_stats(commune: str):
-    data = df[df["Commune"] == commune.upper()]
-    if data.empty:
-        return {"error": "Commune introuvable"}
-    return {
-        "commune": commune,
-        "nb_transactions": len(data),
-        "prix_m2_moyen": round(data["prix_m2"].mean(), 2),
-        "prix_m2_median": round(data["prix_m2"].median(), 2),
-        "prix_moyen": round(data["Valeur fonciere"].mean(), 2),
-    }
 
 
 @router.get("/compare")
 def compare_communes(communes: str):
-    result = []
-    for commune in communes.split(","):
-        data = df[df["Commune"] == commune.strip().upper()]
-        if not data.empty:
-            result.append({
-                "commune": commune.strip(),
-                "nb_transactions": len(data),
-                "prix_m2_moyen": round(data["prix_m2"].mean(), 2),
-                "prix_m2_median": round(data["prix_m2"].median(), 2),
-                "prix_moyen": round(data["Valeur fonciere"].mean(), 2),
-            })
+    selected = [c.strip().upper() for c in communes.split(",")]
+    result = [s for s in stats_data if s["commune"] in selected]
     return {"result": result}
 
 
