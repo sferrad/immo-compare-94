@@ -3,6 +3,7 @@ import json
 import os
 from shapely.geometry import shape, mapping, Polygon, MultiPolygon
 from shapely.ops import unary_union
+from app.communes_94 import COMMUNES_94
 
 router = APIRouter()
 
@@ -48,7 +49,7 @@ def build_cadastre():
             "type": "Feature",
             "properties": {
                 "code_insee": code,
-                "nom": ""
+                "nom": COMMUNES_94.get(code, "")
             },
             "geometry": mapping(merged)
         })
